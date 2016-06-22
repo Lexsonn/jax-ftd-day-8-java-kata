@@ -65,7 +65,7 @@ public class Lepidopterologist implements ILepidopterologist {
 		List<Sample> list = new ArrayList<Sample>();
 		if (speciesMap.containsKey(species)) {
 			list = speciesMap.get(species);
-			Collections.sort(list);
+			// Collections.sort(list);
 		}
 		return list;
 	}

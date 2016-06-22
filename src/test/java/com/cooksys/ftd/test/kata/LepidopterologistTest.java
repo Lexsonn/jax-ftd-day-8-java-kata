@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,13 +42,13 @@ public class LepidopterologistTest {
 		gList[4] = new GrowthModel(1.0, 1.0);
 		
 		speciesList = new Species[5];
-		speciesList[0] = new Species("A", gList[0], 0.05);	// 1
-		speciesList[1] = new Species("B", gList[1], 0.05);	// 2
-		speciesList[2] = new Species("E", gList[2], 0.05);	// 5
-		speciesList[3] = new Species("D", gList[3], 0.05);	// 4
-		speciesList[4] = new Species("C", gList[4], 0.05);	// 3
+		speciesList[0] = new Species("A", gList[0], 0.001);	// 1
+		speciesList[1] = new Species("B", gList[1], 0.001);	// 2
+		speciesList[2] = new Species("E", gList[2], 0.001);	// 5
+		speciesList[3] = new Species("D", gList[3], 0.001);	// 4
+		speciesList[4] = new Species("C", gList[4], 0.001);	// 3
 		
-		sampleList = new Sample[6];
+		sampleList = new Sample[8];
 		Butterpillar b0 = new Butterpillar(1.4, 12.0);
 		Catterfly c0 = gList[0].convert(b0);
 		sampleList[0] = new Sample(b0, c0);
@@ -69,6 +72,14 @@ public class LepidopterologistTest {
 		Butterpillar b5 = new Butterpillar(1.9, 32.0);
 		Catterfly c5 = gList[1].convert(b5);
 		sampleList[5] = new Sample(b5, c5);
+		
+		Butterpillar b6 = new Butterpillar(1.2, 26.0);
+		Catterfly c6 = gList[1].convert(b6);
+		sampleList[6] = new Sample(b6, c6);
+		
+		Butterpillar b7 = new Butterpillar(1.0, 37.0);
+		Catterfly c7 = gList[1].convert(b7);
+		sampleList[7] = new Sample(b7, c7);
 	}
 	
 	@After
@@ -137,8 +148,7 @@ public class LepidopterologistTest {
 
 	@Test
 	public void testGetRegisteredSpecies() {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		List<Species> sortedList = new ArrayList(Arrays.asList(speciesList));
+		List<Species> sortedList = new ArrayList<>(Arrays.asList(speciesList));
 		Collections.sort(sortedList);
 		
 		lepMan.registerSpecies(speciesList[0]);
@@ -161,7 +171,84 @@ public class LepidopterologistTest {
 
 	@Test
 	public void testGetTaxonomy() {
-		//fail("Not yet implemented");
+		Map<Species, List<Sample>> sortedMap = new TreeMap<Species, List<Sample>>();
+		
+		List<Sample> speciesAList = new ArrayList<>();
+		speciesAList.add(sampleList[0]);
+		
+		List<Sample> speciesBList = new ArrayList<>();
+		speciesBList.add(sampleList[1]);
+		speciesBList.add(sampleList[5]);
+		speciesBList.add(sampleList[6]);
+		speciesBList.add(sampleList[7]);
+		Collections.sort(speciesBList);
+		
+		List<Sample> speciesCList = new ArrayList<>();
+		speciesCList.add(sampleList[2]);
+		
+		List<Sample> speciesDList = new ArrayList<>();
+		speciesDList.add(sampleList[3]);
+		
+		List<Sample> speciesEList = new ArrayList<>();
+		speciesEList.add(sampleList[4]);
+		
+		sortedMap.put(speciesList[0], speciesAList);
+		sortedMap.put(speciesList[1], speciesBList);
+		sortedMap.put(speciesList[2], speciesCList);
+		sortedMap.put(speciesList[3], speciesDList);
+		sortedMap.put(speciesList[4], speciesEList);
+		
+		lepMan.registerSpecies(speciesList[0]);
+		lepMan.registerSpecies(speciesList[1]);
+		lepMan.registerSpecies(speciesList[2]);
+		lepMan.registerSpecies(speciesList[3]);
+		lepMan.registerSpecies(speciesList[4]);
+		
+		lepMan.recordSample(sampleList[0]);
+		lepMan.recordSample(sampleList[1]);
+		lepMan.recordSample(sampleList[2]);
+		lepMan.recordSample(sampleList[3]);
+		lepMan.recordSample(sampleList[4]);
+		lepMan.recordSample(sampleList[5]);
+		lepMan.recordSample(sampleList[6]);
+		lepMan.recordSample(sampleList[7]);
+		
+		Map<Species, List<Sample>> compareMap = lepMan.getTaxonomy();
+		
+		Set<Species> sortedKeySet = sortedMap.keySet();
+		Set<Species> compareKeySet = compareMap.keySet();
+		
+		List<Species> sortedKS = new ArrayList<>(sortedKeySet);
+		List<Species> compareKS = new ArrayList<>(compareKeySet);
+		for (int i = 0; i < sortedKeySet.size(); i++)
+			assertTrue(sortedKS.get(i).equals(compareKS.get(i)));
+		
+		List<Sample> sortedAList = sortedMap.get(sortedKS.get(0));
+		List<Sample> sortedBList = sortedMap.get(sortedKS.get(1));
+		List<Sample> sortedCList = sortedMap.get(sortedKS.get(2));
+		List<Sample> sortedDList = sortedMap.get(sortedKS.get(3));
+		List<Sample> sortedEList = sortedMap.get(sortedKS.get(4));
+		
+		List<Sample> compareAList = compareMap.get(compareKS.get(0));
+		List<Sample> compareBList = compareMap.get(compareKS.get(1));
+		List<Sample> compareCList = compareMap.get(compareKS.get(2));
+		List<Sample> compareDList = compareMap.get(compareKS.get(3));
+		List<Sample> compareEList = compareMap.get(compareKS.get(4));
+		
+		for (int i = 0; i < compareAList.size(); i++)
+			assertTrue(compareAList.get(i).equals(sortedAList.get(i)));
+		
+		for (int i = 0; i < compareBList.size(); i++) 
+			assertTrue(compareBList.get(i).equals(sortedBList.get(i)));
+		
+		for (int i = 0; i < compareCList.size(); i++)
+			assertTrue(compareCList.get(i).equals(sortedCList.get(i)));
+		
+		for (int i = 0; i < compareDList.size(); i++)
+			assertTrue(compareDList.get(i).equals(sortedDList.get(i)));
+		
+		for (int i = 0; i < compareEList.size(); i++)
+			assertTrue(compareEList.get(i).equals(sortedEList.get(i)));
 	}
 
 }
